@@ -33,6 +33,16 @@ class HashTable:
 
         Implement this, and/or FNV-1.
         """
+        # prime number
+        hash = 5381
+
+        # loop through each character within key
+        for char in key:
+            # make the hash the sum of the charCode of the character 
+            # plus the prime number times 33
+            hash = (hash * 33) + ord(char)
+
+        return hash
 
     def hash_index(self, key):
         """
