@@ -99,6 +99,41 @@ class HashTable:
 
         Implement this.
         """
+        # hash the current key
+        index = hash_index(key)
+        # grab the first linked list node within list that matches the key
+        current_node = self.storage[key]
+
+        # if there is a node in the linked list 
+        if current_node != None:
+            # check if the node key is equal to the key
+            # that needs to be deleted
+            if current_node.key == key:
+                # if so remove the node
+                current_node = None
+            else:
+                # move to the next node
+                next_node = current_node.next
+
+                # iterate until there is a next 
+                while next_node is not None:
+                    # check if next node key matches given key
+                    if next_node.key == key:
+                        # if so delete node
+                        next_node = None
+                        # stop iteration
+                        break
+                    else:
+                        # move to next iteration
+                        # and set the next node
+                        next_node = next_node.next
+            
+        else:
+            # if not found print message
+            print(f"Key:{key} not found in memory")
+
+            
+
 
     def get(self, key):
         """
