@@ -143,6 +143,33 @@ class HashTable:
 
         Implement this.
         """
+        # grab index by hashing key
+        index = hash_index(key)
+        # grab the first node
+        current_node = self.storage[index]
+
+        # check if the current node is not None
+        if current_node is not None:
+            # if the current node key matches the given key
+            if current_node.key == key:
+                # then return the value of that node
+                return current_node.value
+            else:
+                # else set the next node to be the current node next
+                next_node = current_node.next
+                # iterate over while there is a next
+                while next_node is not None:
+                    # if the next node key is equal to the given key
+                    if next_node.key == key:
+                        # return the next node value
+                        return next_node.value
+                    else:
+                        # else move to the following node
+                        next_node = next_node.next 
+        else: 
+            # if so return None
+            return None
+
 
     def resize(self):
         """
