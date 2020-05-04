@@ -60,6 +60,36 @@ class HashTable:
 
         Implement this.
         """
+        # first grab index by hashing key
+        index = self.hash_index(key)
+
+        current_node = self.storage[index]
+        # check if the memory slot is empty
+        if current_node is None:
+            # if so store key value pair as a linked list node
+            current_node = HashTableEntry(key, value)
+        else:
+            # check if next node is None, end of linked list
+            if current_node.next is None:
+                # if so place value by creating connection
+                current_node.next = HashTableEntry(key, value)
+
+            # else iterate over the list of nodes until an empty space is found
+            while current_node.next is not None:
+                # if a node key in the linked list matches the key
+                if current_node.key == key:
+                    # replace the value
+                    current_node.value = value
+                    # stop looping
+                    break
+                # set current node to be node.next
+                # to move forward in the linked list
+                current_node = current_node.next
+
+            # if no matches are found for the key and we are at the end of the loop
+            # then set the last node next to the new key value pair
+            current_node.next = HashTableEntry(key, value)
+
 
     def delete(self, key):
         """
