@@ -18,7 +18,7 @@ class HashTable:
     """
     def __init__(self, capacity=53):
         self.capacity = capacity
-        self.storage = [0] * capacity 
+        self.storage = [None] * capacity 
 
     def fnv1(self, key):
         """
@@ -34,15 +34,15 @@ class HashTable:
         Implement this, and/or FNV-1.
         """
         # prime number
-        hash = 5381
+        hashed_value = 5381
 
         # loop through each character within key
         for char in key:
             # make the hash the sum of the charCode of the character 
             # plus the prime number times 33
-            hash = (hash * 33) + ord(char)
+            hashed_value = (hashed_value * 33) + ord(char)
 
-        return hash
+        return hashed_value
 
     def hash_index(self, key):
         """
@@ -60,35 +60,30 @@ class HashTable:
 
         Implement this.
         """
-        # first grab index by hashing key
-        index = self.hash_index(key)
-
-        current_node = self.storage[index]
-        # check if the memory slot is empty
-        if current_node is None:
-            # if so store key value pair as a linked list node
-            current_node = HashTableEntry(key, value)
-        else:
-            # check if next node is None, end of linked list
-            if current_node.next is None:
-                # if so place value by creating connection
-                current_node.next = HashTableEntry(key, value)
-
-            # else iterate over the list of nodes until an empty space is found
-            while current_node.next is not None:
-                # if a node key in the linked list matches the key
-                if current_node.key == key:
-                    # replace the value
-                    current_node.value = value
-                    # stop looping
+        # if the current node is None
+        if self.storage[self.hash_index(key)] != None:
+            current = self.storage[self.hash_index(key)]
+            # while there is a current keep iterating
+            while current:
+                # if current node key matches given key
+                if current.key == key:
+                    # set current node value to the new given value
+                    current.value = value
+                    # break out of loop
                     break
-                # set current node to be node.next
-                # to move forward in the linked list
-                current_node = current_node.next
-
-            # if no matches are found for the key and we are at the end of the loop
-            # then set the last node next to the new key value pair
-            current_node.next = HashTableEntry(key, value)
+                # if the current node as a next
+                if current.next != None:
+                    # set current node to be the next node
+                    current = current.next
+                else:
+                    # else break out of the loop
+                    break
+            # and set the current node next to be the new key value pair
+            current.next = HashTableEntry(key, value)
+        else:
+            # if there is no value already in the current node
+            # set that to the key value pair given
+            self.storage[self.hash_index(key)] = HashTableEntry(key, value)
 
 
     def delete(self, key):
@@ -99,40 +94,56 @@ class HashTable:
 
         Implement this.
         """
-        # hash the current key
-        index = hash_index(key)
-        # grab the first linked list node within list that matches the key
-        current_node = self.storage[key]
 
-        # if there is a node in the linked list 
-        if current_node != None:
-            # check if the node key is equal to the key
-            # that needs to be deleted
-            if current_node.key == key:
-                # if so remove the node
-                current_node = None
-            else:
-                # move to the next node
-                next_node = current_node.next
-
-                # iterate until there is a next 
-                while next_node is not None:
-                    # check if next node key matches given key
-                    if next_node.key == key:
-                        # if so delete node
-                        next_node = None
-                        # stop iteration
+        if  self.storage[self.hash_index(key)] != None:
+            previous_node = None
+            current_node = self.storage[self.hash_index(key)]
+            next_node = current_node.next
+            while True:
+                if current_node.key == key:
+                     # If the current node is the only one in the list
+                    if previous_node == None and next_node == None:
+                        # we set that to None
+                        self.storage[self.hash_index(key)] = None
                         break
-                    else:
-                        # move to next iteration
-                        # and set the next node
-                        next_node = next_node.next
-            
-        else:
-            # if not found print message
-            print(f"Key:{key} not found in memory")
+                    # if the current node has no previous node but a next (start of list)
+                    if previous_node == None and next_node != None:
+                        # we make the current node to be the next node in line
+                        self.storage[self.hash_index(key)] = next_node
+                        # we break out of the loop
+                        break
+                    # if the node has a previous and next
+                    if previous_node != None and next_node != None:
+                        # previous node will point to the current next
+                        previous_node.next = next_node
+                        # break out of loop
+                        break
+                    # if the current node is the last one in the list and there are no next
+                    if previous_node != None and next_node == None:
+                        # set the previous node next to be None
+                        previous_node.next = None
+                        # break out of the loop
+                        break
 
-            
+                # else if there is a next move forward until there are next nodes 
+                elif current_node.next != None:
+                    # set the previous to be the current node
+                    previous_node = current_node
+                    # set the current to be the next node
+                    current_node = current_node.next
+                    # and set the next node to be the new current next node
+                    next_node = current_node.next
+
+                # if no matches are found 
+                else:
+                    # print a message
+                    print(f"Key:{key} not found in memory")
+                    # and break out of the loop
+                    break
+        # no node is present
+        else:
+            # print a message
+            print(f"Key:{key} not found in memory")
 
 
     def get(self, key):
@@ -144,7 +155,7 @@ class HashTable:
         Implement this.
         """
         # grab index by hashing key
-        index = hash_index(key)
+        index = self.hash_index(key)
         # grab the first node
         current_node = self.storage[index]
 
@@ -178,6 +189,26 @@ class HashTable:
 
         Implement this.
         """
+        # double the current storage capacity
+        self.capacity *= 2
+        # save the previous storage content in a variable
+        prev_storage = self.storage
+        # increase the storage to the new capacity
+        self.storage = [None] * self.capacity
+
+        # iterate over the previous storage entries
+        for entry in prev_storage:
+            # if the entry is not empty
+            if entry != None:
+                # set the current node to be the entry
+                current_node = entry
+
+                # and while there is an entry
+                while current_node is not None:
+                    # pass that to the new storage with increased capacity the entry
+                    self.put(current_node.key, current_node.value)
+                    # if there is a next set the current to be next in line and so on
+                    current_node = current_node.next
 
 if __name__ == "__main__":
     ht = HashTable(2)
