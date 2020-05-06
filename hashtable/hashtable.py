@@ -19,6 +19,7 @@ class HashTable:
     def __init__(self, capacity=53):
         self.capacity = capacity
         self.storage = [None] * capacity 
+        self.el_count = 0
 
     def fnv1(self, key):
         """
@@ -80,10 +81,14 @@ class HashTable:
                     break
             # and set the current node next to be the new key value pair
             current.next = HashTableEntry(key, value)
+            # increase element count by one
+            self.el_count += 1
         else:
             # if there is no value already in the current node
             # set that to the key value pair given
             self.storage[self.hash_index(key)] = HashTableEntry(key, value)
+            # increase element count by one
+            self.el_count += 1
 
 
     def delete(self, key):
@@ -105,6 +110,7 @@ class HashTable:
                     if previous_node == None and next_node == None:
                         # we set that to None
                         self.storage[self.hash_index(key)] = None
+                        # break out of loop
                         break
                     # if the current node has no previous node but a next (start of list)
                     if previous_node == None and next_node != None:
@@ -124,6 +130,8 @@ class HashTable:
                         previous_node.next = None
                         # break out of the loop
                         break
+                    # decrease element count by one
+                    self.el_count -= 1
 
                 # else if there is a next move forward until there are next nodes 
                 elif current_node.next != None:
@@ -180,22 +188,8 @@ class HashTable:
         else: 
             # if so return None
             return None
-
-
-    def resize(self):
-        """
-        Doubles the capacity of the hash table and
-        rehash all key/value pairs.
-
-        Implement this.
-        """
-        # double the current storage capacity
-        self.capacity *= 2
-        # save the previous storage content in a variable
-        prev_storage = self.storage
-        # increase the storage to the new capacity
-        self.storage = [None] * self.capacity
-
+    
+    def relocate_entries(self, prev_storage):
         # iterate over the previous storage entries
         for entry in prev_storage:
             # if the entry is not empty
@@ -209,6 +203,37 @@ class HashTable:
                     self.put(current_node.key, current_node.value)
                     # if there is a next set the current to be next in line and so on
                     current_node = current_node.next
+
+
+    def resize(self):
+        """
+        Doubles the capacity of the hash table and
+        rehash all key/value pairs.
+
+        Implement this.
+        """
+        # if element/slot are > 70% - Grow Factor
+        if int((self.el_count / self.capacity) * 100) > 70:
+            # double the current storage capacity
+            self.capacity *= 2
+            # save the previous storage content in a variable
+            prev_storage = self.storage
+            # allocate new slots in accordance with new capacity
+            self.storage = [None] * self.capacity
+            # invoke method to relocate entries to new increased storage
+            self.relocate_entries(prev_storage)
+        
+        # if element/slot are < 20% - Low Factor
+        elif int((self.el_count / self.capacity) * 100) < 20 and self.capacity >= 16:
+            # half the capacity 
+            self.capacity /= 2
+            # save previous storage content for later retrieval
+            prev_storage = self.storage
+            # relocate slots
+            self.storage = [None] * self.capacity
+            # invoke method to relocate entries to new shrank storage
+            self.relocate_entries(prev_storage)
+            
 
 if __name__ == "__main__":
     ht = HashTable(2)
