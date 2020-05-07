@@ -61,6 +61,7 @@ class HashTable:
 
         Implement this.
         """
+
         # if the current node is None
         if self.storage[self.hash_index(key)] != None:
             current = self.storage[self.hash_index(key)]
@@ -83,12 +84,16 @@ class HashTable:
             current.next = HashTableEntry(key, value)
             # increase element count by one
             self.el_count += 1
+            # check if hashTable needs to be resized
+            self.resize()
         else:
             # if there is no value already in the current node
             # set that to the key value pair given
             self.storage[self.hash_index(key)] = HashTableEntry(key, value)
             # increase element count by one
             self.el_count += 1
+            # check if hashTable needs to be resized
+            self.resize()
 
 
     def delete(self, key):
@@ -132,6 +137,8 @@ class HashTable:
                         break
                     # decrease element count by one
                     self.el_count -= 1
+                    # check if hashTable needs to be resized
+                    self.resize()
 
                 # else if there is a next move forward until there are next nodes 
                 elif current_node.next != None:
